@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const fetchTasks = async (page = 1) => {
     try {
-      const response = await fetch(`http://localhost:4000/tasks?page=${page}&limit=${tasksPerPage}`);
+      const response = await fetch(`http://http://172.16.2.6:4000/tasks?page=${page}&limit=${tasksPerPage}`);
       if (!response.ok) {
         throw new Error('Failed to fetch tasks');
       }
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-          const response = await fetch('http://localhost:4000/add/task', {
+          const response = await fetch('http://http://172.16.2.6:4000/add/task', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
