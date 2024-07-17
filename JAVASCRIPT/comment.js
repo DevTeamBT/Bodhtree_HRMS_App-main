@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const fetchTaskDetails = async () => {
         try {
-            const response = await fetch(`http://http://172.16.2.6:4000/task/${taskId}`);
+            const response = await fetch(`http://172.16.2.6:4000/task/${taskId}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch task details');
             }
@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const fetchComments = async () => {
         try {
-            const response = await fetch(`http://http://172.16.2.6:4000/comments/${taskId}`);
+            const response = await fetch(`http://172.16.2.6:4000/comments/${taskId}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch comments');
             }
