@@ -2,29 +2,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const taskId = urlParams.get('taskId');
 
+    let currentPage = 1;
+    const tasksPerPage = 10;
+
     if (!taskId) {
         alert('No task ID provided');
         return;
     }
 
+
+    // Function to fetch and display data based on taskId
     const fetchTaskDetails = async () => {
         try {
-            const response = await fetch(`http://172.16.2.6:4000/task/${taskId}`);
+            const response = await fetch(`http://172.16.2.6:4000/comments/${taskId}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch task details');
             }
             const task = await response.json();
-            document.getElementById('taskTitle').innerText = task.tTitle;
-            document.getElementById('taskDesc').innerText = task.tDesc;
-            document.getElementById('taskAssignedTo').innerText = task.tAssignedTo.join(', ');
-            document.getElementById('taskCreatedOn').innerText = new Date(task.tCreatedOn).toLocaleDateString();
+            
+            // Example: Display task details in the DOM
+            const taskTitleElement = document.getElementById('taskTitle');
+            taskTitleElement.textContent = task.tTitle;
+
+            // Continue to populate other elements as needed
+
         } catch (error) {
             console.error('Error fetching task details:', error);
-            // alert('Failed to fetch task details. Please try again later.');
+            alert('Failed to fetch task details. Please try again later.');
         }
     };
 
-    const fetchComments = async () => {
+    
+    const fetchComments = async (page = 1) => {
         try {
             const response = await fetch(`http://172.16.2.6:4000/comments/${taskId}`);
             if (!response.ok) {
@@ -54,8 +63,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const formattedDate = new Date(comment.tcCreatedOn).toLocaleString('en-IN', options);
                 cell4.textContent = formattedDate;
             });
-            populateTaskTable(data.tasks, page, tasksPerPage);
-            setupPagination(data.totalPages, page);
+            populateTaskTable(comments.tasks, page, tasksPerPage);
+            setupPagination(comments.totalPages, page);
             currentPage = page; // Update the current page
         } catch (error) {
             console.error('Error fetching comments:', error);
@@ -64,25 +73,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     
 
-
-    // const populateTaskTable = (comments, currentPage, limit) => {
-    //     const taskTableBody = document.getElementById('taskTableBody');
-    //     taskTableBody.innerHTML = ''; // Clear existing rows
+    const populateTaskTable = (comments, currentPage, limit) => {
+        const taskTableBody = document.getElementById('taskTableBody');
+        taskTableBody.innerHTML = ''; // Clear existing rows
     
-    //     comments.forEach((comments, index) => {
-    //       const newRow = commentsTableBody.insertRow();
-    //       newRow.innerHTML = `
-    //         <td>${(currentPage - 1) * limit + index + 1}</td>
-    //         <td>${comments.tcDesc}</td>
-    //         <td>${comments.tcAssignedTo}</td>
-    //         <td>${new Date(comments.tcCreatedOn).toLocaleDateString()}</td>
-    //         <td class="project-actions text-right">
-    //           <a class="btn btn-info btn-sm" href="#"><i class="fas fa-pencil-alt"></i> Edit</a>
-    //           <a class="btn btn-danger btn-sm" href="#"><i class="fas fa-trash-alt"></i> Delete</a>
-    //         </td>
-    //       `;
-    //     });
-    //   };
+        comments.forEach((comments, index) => {
+          const newRow = commentsTableBody.insertRow();
+          newRow.innerHTML = `
+            <td>${(currentPage - 1) * limit + index + 1}</td>
+            <td>${comments.tcDesc}</td>
+            <td>${comments.tcAssignedTo}</td>
+            <td>${new Date(comments.tcCreatedOn).toLocaleDateString()}</td>
+            <td class="project-actions text-right">
+              <a class="btn btn-info btn-sm" href="#"><i class="fas fa-pencil-alt"></i> Edit</a>
+              <a class="btn btn-danger btn-sm" href="#"><i class="fas fa-trash-alt"></i> Delete</a>
+            </td>
+          `;
+        });
+      };
     
       const setupPagination = (totalPages, currentPage) => {
         const paginationControls = document.getElementById('paginationControls');
