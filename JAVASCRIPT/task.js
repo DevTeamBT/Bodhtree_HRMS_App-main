@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const populateAssignedToSelect = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/users');
+      const response = await fetch('http://172.16.2.6:4000/api/users');
       if (!response.ok) {
         throw new Error('Failed to fetch users');
       }
