@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const taskId = urlParams.get('taskId');
-
     let currentPage = 1;
     const tasksPerPage = 10;
 
@@ -10,27 +9,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-
-    // Function to fetch and display data based on taskId
     const fetchTaskDetails = async () => {
         try {
-            const response = await fetch(`http://172.16.2.6:4000/comments/${taskId}`);
+            const response = await fetch(`http://172.16.2.6:4000/task/${taskId}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch task details');
             }
             const task = await response.json();
-            
-            // Example: Display task details in the DOM
             const taskTitleElement = document.getElementById('taskTitle');
             taskTitleElement.textContent = task.tTitle;
-
-            // Continue to populate other elements as needed
-
+            document.getElementById('taskTitle').innerText = task.tTitle;
+            document.getElementById('taskDesc').innerText = task.tDesc;
+            document.getElementById('taskAssignedTo').innerText = task.tAssignedTo.join(', ');
+            document.getElementById('taskCreatedOn').innerText = new Date(task.tCreatedOn).toLocaleDateString();
         } catch (error) {
             console.error('Error fetching task details:', error);
-            alert('Failed to fetch task details. Please try again later.');
+            // alert('Failed to fetch task details. Please try again later.');
         }
     };
+
+
 
     
     const fetchComments = async (page = 1) => {
@@ -72,6 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
     
+   
 
     const populateTaskTable = (comments, currentPage, limit) => {
         const taskTableBody = document.getElementById('taskTableBody');
