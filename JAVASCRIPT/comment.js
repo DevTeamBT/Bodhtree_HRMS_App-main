@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 tcCreatedOn: new Date().toISOString()
             };
 
-            const response = await fetch(`http://http://172.16.2.6:4000/add/comments/${taskId}`, {
+            const response = await fetch(`http://172.16.2.6:4000/add/comments/${taskId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
 
             try {
-                const response = await fetch(`http://http://172.16.2.6:4000/add/comments/${taskId}`, {
+                const response = await fetch(`http://172.16.2.6:4000/add/comments/${taskId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
