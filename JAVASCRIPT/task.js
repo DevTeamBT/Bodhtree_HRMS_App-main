@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!response.ok) {
         throw new Error('Failed to delete task');
       }
-      alert('Task set to inactive successfully.');
+      alert('Task Deleted successfully.');
     } catch (error) {
       console.error('Error deleting task:', error);
       alert('Error deleting task.');
