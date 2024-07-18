@@ -156,10 +156,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     //     }
     //   }; 
 
-
-
-
-
     const addCommentForm = document.getElementById('addCommentForm');
     addCommentForm.addEventListener('submit', async (event) => {
         event.preventDefault();

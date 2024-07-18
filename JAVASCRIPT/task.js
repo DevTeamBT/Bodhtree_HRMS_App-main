@@ -26,17 +26,42 @@ document.addEventListener('DOMContentLoaded', () => {
       const newRow = taskTableBody.insertRow();
       newRow.innerHTML = `
         <td>${(currentPage - 1) * limit + index + 1}</td>
-       <td><a href="/HTML/comment.html?taskId=${task._id}">${task.tTitle}</a></td>
+        <td><a href="/HTML/comment.html?taskId=${task._id}">${task.tTitle}</a></td>
         <td>${task.tDesc}</td>
         <td>${task.tStatus.charAt(0).toUpperCase() + task.tStatus.slice(1)}</td>
         <td>${task.tAssignedTo.join(', ')}</td>
         <td>${new Date(task.tCreatedOn).toLocaleDateString()}</td>
         <td class="project-actions text-right">
           <a class="btn btn-info btn-sm" href="#"><i class="fas fa-pencil-alt"></i> Edit</a>
-          <a class="btn btn-danger btn-sm" href="#"><i class="fas fa-trash-alt"></i> Delete</a>
+          <button class="btn btn-danger btn-sm delete-button" data-id="${task._id}"><i class="fas fa-trash-alt"></i> Delete</button>
         </td>
       `;
     });
+
+    // Add event listeners for delete buttons
+    const deleteButtons = document.querySelectorAll('.delete-button');
+    deleteButtons.forEach(button => {
+      button.addEventListener('click', async (e) => {
+        const taskId = e.target.closest('button').dataset.id;
+        await deleteTask(taskId);
+        fetchTasks(currentPage); // Refresh task list after deletion
+      });
+    });
+  };
+
+  const deleteTask = async (taskId) => {
+    try {
+      const response = await fetch(`http://172.16.2.6:4000/task/${taskId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete task');
+      }
+      alert('Task set to inactive successfully.');
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      alert('Error deleting task.');
+    }
   };
 
   const setupPagination = (totalPages, currentPage) => {
@@ -195,8 +220,15 @@ document.addEventListener('DOMContentLoaded', () => {
             cell6.textContent = new Date(savedTask.tCreatedOn).toLocaleDateString();
             cell7.innerHTML = `
               <a class="btn btn-info btn-sm" href="#"><i class="fas fa-pencil-alt"></i> Edit</a>
-              <a class="btn btn-danger btn-sm" href="#"><i class="fas fa-trash-alt"></i> Delete</a>
+              <button class="btn btn-danger btn-sm delete-button" data-id="${savedTask._id}"><i class="fas fa-trash-alt"></i> Delete</button>
             `;
+
+            // Add delete event listener for the newly added task
+            cell7.querySelector('.delete-button').addEventListener('click', async (e) => {
+              const taskId = savedTask._id;
+              await deleteTask(taskId);
+              fetchTasks(currentPage); // Refresh task list after deletion
+            });
           } else {
             console.error('Failed to save task:', response.statusText);
             alert('Failed to save task.');
