@@ -190,17 +190,25 @@ document.addEventListener('DOMContentLoaded', () => {
     cell5.appendChild(assignedToSelect);
 
     const cell6 = row.insertCell(5);
-    cell6.textContent = new Date(task.tCreatedOn).toLocaleDateString();
+    const createdAtInput = document.createElement('input');
+    createdAtInput.type = 'date';
+    createdAtInput.className = 'form-control';
+    createdAtInput.value = new Date(task.tCreatedOn).toISOString().split('T')[0]; // Format date as YYYY-MM-DD
+    cell6.appendChild(createdAtInput);
+
 
     const cell7 = row.insertCell(6);
+    cell7.textContent = new Date(task.tCreatedOn).toLocaleDateString();
+
+    const cell8 = row.insertCell(7);
     const updateButton = document.createElement('button');
     updateButton.className = 'btn btn-success btn-sm mr-2';
     updateButton.textContent = 'Update';
     const cancelButton = document.createElement('button');
     cancelButton.className = 'btn btn-secondary btn-sm';
     cancelButton.textContent = 'Cancel';
-    cell7.appendChild(updateButton);
-    cell7.appendChild(cancelButton);
+    cell8.appendChild(updateButton);
+    cell8.appendChild(cancelButton);
 
     cancelButton.addEventListener('click', () => {
       fetchTasks(currentPage); // Reload tasks to cancel editing
@@ -210,7 +218,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const updatedTask = {
         tDesc: descriptionInput.value.trim(),
         tStatus: statusSelect.value,
-        tAssignedTo: Array.from(assignedToSelect.selectedOptions, option => option.value)
+        tAssignedTo: Array.from(assignedToSelect.selectedOptions, option => option.value),
+        tCreatedOn: new Date(createdAtInput.value).toISOString()
       };
 
       if (updatedTask.tDesc || updatedTask.tStatus || updatedTask.tAssignedTo) {
@@ -311,7 +320,8 @@ document.addEventListener('DOMContentLoaded', () => {
           tTitle: taskInput.value.trim(),
           tDesc: descriptionInput.value.trim(),
           tStatus: statusSelect.value,
-          tAssignedTo: Array.from(assignedToSelect.selectedOptions, option => option.value)
+          tAssignedTo: Array.from(assignedToSelect.selectedOptions, option => option.value),
+          
         };
 
         try {
