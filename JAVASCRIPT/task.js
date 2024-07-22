@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <td>${task.tAssignedTo.join(', ')}</td>
         <td>${new Date(task.tCreatedOn).toLocaleDateString()}</td>
         <td class="project-actions text-right">
-          <a class="btn btn-info btn-sm" href="#"><i class="fas fa-pencil-alt"></i> Edit</a>
+          <button class="btn btn-info btn-sm edit-button" data-id="${task._id}"><i class="fas fa-pencil-alt"></i> Edit</button>
           <button class="btn btn-danger btn-sm delete-button" data-id="${task._id}"><i class="fas fa-trash-alt"></i> Delete</button>
         </td>
       `;
@@ -47,6 +47,17 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchTasks(currentPage); // Refresh task list after deletion
       });
     });
+
+    // Add event listeners for edit buttons
+    const editButtons = document.querySelectorAll('.edit-button');
+    editButtons.forEach(button => {
+      button.addEventListener('click', async (e) => {
+        const taskId = e.target.closest('button').dataset.id;
+        const row = e.target.closest('tr');
+        const task = tasks.find(t => t._id === taskId);
+        editTask(row, task);
+      });
+    });
   };
 
   const deleteTask = async (taskId) => {
@@ -57,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!response.ok) {
         throw new Error('Failed to delete task');
       }
-      alert('Task Deleted successfully.');
+      alert('Task deleted successfully.');
     } catch (error) {
       console.error('Error deleting task:', error);
       alert('Error deleting task.');
@@ -127,14 +138,115 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('Failed to fetch users. Please try again later.');
       return [];
     }
-  };  
+  };
+
+  const editTask = async (row, task) => {
+    // Clear existing content and create input fields for editing
+    row.innerHTML = '';
+
+    const cell1 = row.insertCell(0);
+    cell1.textContent = row.rowIndex + 1;
+
+    const cell2 = row.insertCell(1);
+    cell2.textContent = task.tTitle; // Do not allow editing of task title
+
+    const cell3 = row.insertCell(2);
+    const descriptionInput = document.createElement('input');
+    descriptionInput.type = 'text';
+    descriptionInput.className = 'form-control';
+    descriptionInput.value = task.tDesc;
+    cell3.appendChild(descriptionInput);
+
+    const cell4 = row.insertCell(3);
+    const statusSelect = document.createElement('select');
+    statusSelect.className = 'form-control';
+    ['pending', 'working', 'onhold', 'completed'].forEach(status => {
+      const option = document.createElement('option');
+      option.value = status;
+      option.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+      if (status === task.tStatus) {
+        option.selected = true;
+      }
+      statusSelect.appendChild(option);
+    });
+    cell4.appendChild(statusSelect);
+
+    const cell5 = row.insertCell(4);
+    const assignedToSelect = document.createElement('select');
+    assignedToSelect.className = 'form-control';
+    assignedToSelect.multiple = true;
+
+    const users = await populateAssignedToSelect();
+    users.forEach(user => {
+      const option = document.createElement('option');
+      option.value = user._id; // Assuming _id is used as value
+      option.textContent = user.fullName;
+      if (task.tAssignedTo.includes(user._id)) { // Check user._id instead of user.fullName
+        option.selected = true;
+      }
+      assignedToSelect.appendChild(option);
+    });
+
+    cell5.appendChild(assignedToSelect);
+
+    const cell6 = row.insertCell(5);
+    cell6.textContent = new Date(task.tCreatedOn).toLocaleDateString();
+
+    const cell7 = row.insertCell(6);
+    const updateButton = document.createElement('button');
+    updateButton.className = 'btn btn-success btn-sm mr-2';
+    updateButton.textContent = 'Update';
+    const cancelButton = document.createElement('button');
+    cancelButton.className = 'btn btn-secondary btn-sm';
+    cancelButton.textContent = 'Cancel';
+    cell7.appendChild(updateButton);
+    cell7.appendChild(cancelButton);
+
+    cancelButton.addEventListener('click', () => {
+      fetchTasks(currentPage); // Reload tasks to cancel editing
+    });
+
+    updateButton.addEventListener('click', async () => {
+      const updatedTask = {
+        tDesc: descriptionInput.value.trim(),
+        tStatus: statusSelect.value,
+        tAssignedTo: Array.from(assignedToSelect.selectedOptions, option => option.value)
+      };
+
+      if (updatedTask.tDesc || updatedTask.tStatus || updatedTask.tAssignedTo) {
+        try {
+          const response = await fetch(`http://172.16.2.6:4000/edit/task/${task._id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedTask)
+          });
+
+          if (response.ok) {
+            alert('Task updated successfully.');
+            fetchTasks(currentPage); // Refresh task list after update
+          } else {
+            const errorData = await response.json();
+            console.error('Failed to update task:', errorData);
+            alert('Failed to update task.');
+          }
+        } catch (error) {
+          console.error('Error updating task:', error);
+          alert('Error updating task.');
+        }
+      } else {
+        alert('Please fill in all fields before updating.');
+      }
+    });
+  };
 
   const addTaskButton = document.getElementById('addTaskButton');
   addTaskButton.addEventListener('click', async () => {
     const taskTableBody = document.getElementById('taskTableBody');
     const newRow = taskTableBody.insertRow();
 
-    const serialNumber = taskTableBody.rows.length + 0; 
+    const serialNumber = taskTableBody.rows.length; // Adjust serial number
     const cell1 = newRow.insertCell(0);
     cell1.textContent = serialNumber;
 
@@ -196,8 +308,8 @@ document.addEventListener('DOMContentLoaded', () => {
     saveButton.addEventListener('click', async function() {
       if (taskInput.value.trim() && descriptionInput.value.trim() && statusSelect.value) {
         const newTask = {
-          tTitle: taskInput.value,
-          tDesc: descriptionInput.value,
+          tTitle: taskInput.value.trim(),
+          tDesc: descriptionInput.value.trim(),
           tStatus: statusSelect.value,
           tAssignedTo: Array.from(assignedToSelect.selectedOptions, option => option.value)
         };
@@ -213,13 +325,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
           if (response.ok) {
             const savedTask = await response.json();
+            cell1.textContent = taskTableBody.rows.length;
             cell2.textContent = savedTask.tTitle;
             cell3.textContent = savedTask.tDesc;
             cell4.textContent = savedTask.tStatus.charAt(0).toUpperCase() + savedTask.tStatus.slice(1);
             cell5.textContent = savedTask.tAssignedTo.join(', ');
             cell6.textContent = new Date(savedTask.tCreatedOn).toLocaleDateString();
             cell7.innerHTML = `
-              <a class="btn btn-info btn-sm" href="#"><i class="fas fa-pencil-alt"></i> Edit</a>
+              <button class="btn btn-info btn-sm edit-button" data-id="${savedTask._id}"><i class="fas fa-pencil-alt"></i> Edit</button>
               <button class="btn btn-danger btn-sm delete-button" data-id="${savedTask._id}"><i class="fas fa-trash-alt"></i> Delete</button>
             `;
 
@@ -229,6 +342,13 @@ document.addEventListener('DOMContentLoaded', () => {
               await deleteTask(taskId);
               fetchTasks(currentPage); // Refresh task list after deletion
             });
+
+            // Add edit event listener for the newly added task
+            cell7.querySelector('.edit-button').addEventListener('click', async (e) => {
+              const taskId = savedTask._id;
+              editTask(newRow, savedTask);
+            });
+
           } else {
             console.error('Failed to save task:', response.statusText);
             alert('Failed to save task.');
