@@ -302,4 +302,5 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     fetchTaskDetails();
     fetchComments();
+    // just comment
 });
