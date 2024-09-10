@@ -21,13 +21,14 @@
                 <form action="/api/login" method="post" onsubmit="loginUser(event)">
                     <div class="mb-3">
                         <input type="email" class="form-control" placeholder="Email" id="email" required>
+                        <div id="error-message" style="color: red; display: none;">Please enter a valid Bodhtree email address.</div>
                     </div>
                     <div class="mb-3">
                         <input type="password" class="form-control" placeholder="Password" id="password" required>
                     </div>
                     <div class="row">
                         <div class="col-4">
-                            <button type="submit"><a href="./home.html">Sign In</a></button> 
+                            <button type="submit">Sign In</a></button> 
                         </div>
                     </div>
                 </form>
