@@ -1,36 +1,58 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const taskId = urlParams.get('taskId');
+    console.log('Task ID:', taskId);  // Check the value of taskId
     let currentPage = 1;
     const tasksPerPage = 10;
 
     if (!taskId) {
-        alert('No task ID provided');
-        return;
+        console.error('Task ID is missing');
+        alert('Task ID is missing from the URL');
+        return; // Stop further execution if taskId is missing
     }
 
-    const fetchTaskDetails = async () => {
+    const fetchTaskDetails = async (taskId) => {
         try {
-            const response = await fetch(`http://172.16.2.6:4000/task/${taskId}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch task details');
+            if (!taskId) {
+                throw new Error('Task ID is required');
             }
+            
+            const response = await fetch(`http://172.16.2.6:4000/task/${taskId}`);
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch task details: ${response.statusText}`);
+            }
+            
             const task = await response.json();
+            
+            if (!task) {
+                throw new Error('No task data received');
+            }
+            
             const taskTitleElement = document.getElementById('taskTitle');
-            taskTitleElement.textContent = task.tTitle;
-            document.getElementById('taskTitle').innerText = task.tTitle;
-            document.getElementById('taskDesc').innerText = task.tDesc;
-            document.getElementById('taskAssignedTo').innerText = task.tAssignedTo.join(', ');
-            document.getElementById('taskCreatedOn').innerText = new Date(task.tCreatedOn).toLocaleDateString();
+            const taskDescElement = document.getElementById('taskDesc');
+    
+            if (taskTitleElement && taskDescElement) {
+                taskTitleElement.innerText = task.tTitle || 'No Title Available';
+                taskDescElement.innerText = task.tDesc || 'No Description Available';
+            } else {
+                console.error('Element(s) with id "taskTitle" or "taskDesc" not found');
+            }
         } catch (error) {
             console.error('Error fetching task details:', error);
-            // alert('Failed to fetch task details. Please try again later.');
+            
+            // Optionally update the UI to reflect the error
+            const taskTitleElement = document.getElementById('taskTitle');
+            const taskDescElement = document.getElementById('taskDesc');
+            
+            if (taskTitleElement && taskDescElement) {
+                taskTitleElement.innerText = 'Error fetching task title';
+                taskDescElement.innerText = 'Error fetching task description';
+            }
         }
     };
-
-
-
     
+
     const fetchComments = async (page = 1) => {
         try {
             const response = await fetch(`http://172.16.2.6:4000/comments/${taskId}`);
@@ -38,35 +60,45 @@ document.addEventListener('DOMContentLoaded', async () => {
                 throw new Error('Failed to fetch comments');
             }
             const comments = await response.json();
-            // const data = await response.json();
             
-            console.log('Fetched comments:', comments); // Log fetched comments
+            console.log('Fetched comments:', comments);
+            
             const commentsList = document.getElementById('commentsTable').getElementsByTagName('tbody')[0];
-            commentsList.innerHTML = ''; // Clear existing comments
-    
-            comments.forEach((comment, index) => {
-                const row = commentsList.insertRow();
+            
+            if (commentsList) {
+                commentsList.innerHTML = ''; // Clear existing comments only if the element exists
                 
-                const cell1 = row.insertCell(0);
-                cell1.textContent = index + 1;
+                comments.forEach((comment, index) => {
+                    const row = commentsList.insertRow();
+                    
+                    const cell1 = row.insertCell(0);
+                    cell1.textContent = index + 1;
     
-                const cell2 = row.insertCell(1);
-                cell2.textContent = comment.tcDesc;
+                    const cell2 = row.insertCell(1);
+                    cell2.textContent = comment.tComments;
     
-                const cell3 = row.insertCell(2);
-                cell3.textContent = comment.tcAssignedTo;
+                    const cell3 = row.insertCell(2);
+                    cell3.textContent = comment.tcAssignedTo;
     
-                const cell4 = row.insertCell(3);
-                const options = { timeZone: 'Asia/Kolkata' };
-                const formattedDate = new Date(comment.tcCreatedOn).toLocaleString('en-IN', options);
-                cell4.textContent = formattedDate;
-            });
-            populateTaskTable(comments.tasks, page, tasksPerPage);
-            setupPagination(comments.totalPages, page);
-            currentPage = page; // Update the current page
+                    const cell4 = row.insertCell(3);
+                    const options = { timeZone: 'Asia/Kolkata' };
+                    const formattedDate = new Date(comment.tcCreatedOn).toLocaleString('en-IN', options);
+                    cell4.textContent = formattedDate;
+                });
+            } else {
+                console.error('Element with id "commentsTable" or tbody not found');
+            }
+            
+            // Ensure these are valid before invoking
+            if (comments.tasks && comments.totalPages) {
+                populateTaskTable(comments.tasks, page, tasksPerPage);
+                setupPagination(comments.totalPages, page);
+                currentPage = page; // Update the current page
+            } else {
+                console.warn('No tasks or pagination info found in comments response');
+            }
         } catch (error) {
             console.error('Error fetching comments:', error);
-            //  alert('Failed to fetch comments. Please try again later.');
         }
     };
     
@@ -80,7 +112,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           const newRow = commentsTableBody.insertRow();
           newRow.innerHTML = `
             <td>${(currentPage - 1) * limit + index + 1}</td>
-            <td>${comments.tcDesc}</td>
+            <td>${comments.tComments}</td>
             <td>${comments.tcAssignedTo}</td>
             <td>${new Date(comments.tcCreatedOn).toLocaleDateString()}</td>
             <td class="project-actions text-right">
@@ -156,151 +188,155 @@ document.addEventListener('DOMContentLoaded', async () => {
     //     }
     //   }; 
 
-    const addCommentForm = document.getElementById('addCommentForm');
-    addCommentForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const commentText = document.getElementById('commentText').value.trim();
-        const commentedBy = document.getElementById('commentedBy').value.trim();
+    // Task ID should be fetched from the URL or defined properly
+// const taskId = new URLSearchParams(window.location.search).get('taskId');
 
-        if (!commentText || !commentedBy) {
-            alert('Comment and commenter name are required');
+// Add comment form submission
+const addCommentForm = document.getElementById('addCommentForm');
+addCommentForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    
+    const commentText = document.getElementById('commentText').value.trim();
+    const commentedBy = document.getElementById('commentedBy').value.trim();
+
+    // Validation check
+    if (!commentText || !commentedBy) {
+        alert('Comment and commenter name are required');
+        return;
+    }
+
+    try {
+        // Data for comment
+        const comment = {
+            tComments: commentText,
+            tcAssignedTo: commentedBy,
+            tcCreatedOn: new Date().toISOString()
+        };
+
+        // POST request to add comment
+        const response = await fetch(`http://172.16.2.6:4000/add/comments/${taskId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(comment),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to add comment');
+        }
+
+        console.log('Comment added successfully');
+        document.getElementById('commentText').value = '';
+        document.getElementById('commentedBy').value = '';
+
+        // Optionally refresh comments after adding
+        fetchComments();
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        alert('Failed to add comment. Please try again later.');
+    }
+});
+
+// Handle adding a new comment row dynamically
+document.getElementById('addCommentButton').addEventListener('click', function() {
+    const commentsTable = document.getElementById('commentsTable').getElementsByTagName('tbody')[0];
+
+    // Create a new row for adding a comment
+    const newRow = commentsTable.insertRow();
+
+    // S No cell
+    const cell1 = newRow.insertCell(0);
+    cell1.textContent = commentsTable.rows.length + 1;
+
+    // Comment input cell
+    const cell2 = newRow.insertCell(1);
+    const commentText = document.createElement('input');
+    commentText.type = 'text';
+    commentText.className = 'form-control';
+    commentText.placeholder = 'Enter your comment';
+    cell2.appendChild(commentText);
+
+    // Commented by cell
+    const cell3 = newRow.insertCell(2);
+    const commentedBy = document.createElement('input');
+    commentedBy.type = 'text';
+    commentedBy.className = 'form-control';
+    commentedBy.placeholder = 'Enter your name';
+    cell3.appendChild(commentedBy);
+
+    // Date cell
+    const cell4 = newRow.insertCell(3);
+    const date = new Date().toLocaleDateString();
+    cell4.textContent = date;
+
+    // Save and Cancel buttons cell
+    const cell5 = newRow.insertCell(4);
+    const saveButton = document.createElement('button');
+    saveButton.className = 'btn btn-success btn-sm';
+    saveButton.textContent = 'Save';
+    saveButton.style.marginRight = '4px';
+    const cancelButton = document.createElement('button');
+    cancelButton.className = 'btn btn-secondary btn-sm';
+    cancelButton.textContent = 'Cancel';
+    cell5.appendChild(saveButton);
+    cell5.appendChild(cancelButton);
+
+    // Cancel button functionality
+    cancelButton.addEventListener('click', function() {
+        newRow.remove();
+    });
+
+    // Save button functionality
+    saveButton.addEventListener('click', async function() {
+        const commentText = commentText.value.trim();
+        const commenterName = commentedBy.value.trim();
+
+        if (!commentText || !commenterName) {
+            alert('Please fill in all fields before saving.');
             return;
         }
 
-        try {
-            const comment = {
-                tcDesc: commentText,
-                tcAssignedTo: commentedBy,
-                tcCreatedOn: new Date().toISOString()
-            };
+        const comment = {
+            tComments: commentText,
+            tcAssignedTo: commenterName,
+            tcCreatedOn: new Date().toISOString()
+        };
 
+        try {
             const response = await fetch(`http://172.16.2.6:4000/add/comments/${taskId}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(comment),
+                body: JSON.stringify(comment)
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to add comment');
-            }
+            if (response.ok) {
+                console.log('Comment saved successfully');
+                // Update the row with entered values
+                cell2.textContent = commentText;
+                cell3.textContent = commenterName;
+                cell4.textContent = new Date(comment.tcCreatedOn).toLocaleDateString();
 
-            console.log('Comment added successfully');
-            document.getElementById('commentText').value = '';
-            document.getElementById('commentedBy').value = '';
-            // fetchComments();
+                // Replace save and cancel buttons with edit and delete
+                cell5.innerHTML = `
+                    <a class="btn btn-info btn-sm" href="#"><i class="fas fa-pencil-alt"></i> Edit</a>
+                    <a class="btn btn-danger btn-sm" href="#"><i class="fas fa-trash"></i> Delete</a>
+                `;
+            } else {
+                throw new Error('Failed to save comment');
+            }
         } catch (error) {
-            console.error('Error adding comment:', error);
-            alert('Failed to add comment. Please try again later.');
+            console.error('Error saving comment:', error);
+            alert('Failed to save comment. Please try again.');
         }
     });
+});
 
-    document.getElementById('addCommentButton').addEventListener('click', function() {
-        const commentsTable = document.getElementById('commentsTable').getElementsByTagName('tbody')[0];
+// Fetch task details and comments initially
+fetchTaskDetails();
+fetchComments();
+fetchTaskDetails(taskId);
 
-        // Create a new row
-        const newRow = commentsTable.insertRow();
-
-        // S No cell
-        const cell1 = newRow.insertCell(0);
-        cell1.textContent = commentsTable.rows.length + 0; // Increment by 1 for new row
-
-        // Comment input cell
-        const cell2 = newRow.insertCell(1);
-        const inputBox = document.createElement('input');
-        inputBox.type = 'text';
-        inputBox.className = 'form-control';
-        inputBox.placeholder = 'Enter your comment';
-        cell2.appendChild(inputBox);
-
-        // Commented by cell
-        const cell3 = newRow.insertCell(2);
-        const commentedBy = document.createElement('input');
-        commentedBy.type = 'text';
-        commentedBy.className = 'form-control';
-        commentedBy.placeholder = 'Enter your name';
-        cell3.appendChild(commentedBy);
-
-        // const users = populateAssignedToSelect();
-        // users.forEach(user => {
-        // const option = document.createElement('option');
-        // option.value = user._id; // Assuming _id is used as value
-        // option.textContent = user.fullName;
-        // assignedToSelect.appendChild(option);
-        // });
-
-
-        // Updated on cell
-        const cell4 = newRow.insertCell(3);
-        const date = new Date().toLocaleDateString();
-        cell4.textContent = date;
-
-        // Save and Cancel buttons cell
-        const cell5 = newRow.insertCell(4);
-        const saveButton = document.createElement('button');
-        saveButton.className = 'btn btn-success btn-sm mr-2';
-        saveButton.textContent = 'Save';
-        saveButton.style.marginRight = '4px';
-        const cancelButton = document.createElement('button');
-        cancelButton.className = 'btn btn-secondary btn-sm';
-        cancelButton.textContent = 'Cancel';
-
-        cell5.appendChild(saveButton);
-        cell5.appendChild(cancelButton);
-
-        // Cancel button functionality
-        cancelButton.addEventListener('click', function() {
-            newRow.remove();
-        });
-
-        // Save button functionality
-        saveButton.addEventListener('click', async function() {
-            const commentText = inputBox.value.trim();
-            const commenterName = commentedBy.value.trim();
-
-            if (!commentText || !commenterName) {
-                alert('Please fill in all fields before saving.');
-                return;
-            }
-
-            const comment = {
-                tcDesc: commentText,
-                tcAssignedTo: commenterName,
-                tcCreatedOn: new Date().toISOString()
-            };
-
-            try {
-                const response = await fetch(`http://172.16.2.6:4000/add/comments/${taskId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(comment)
-                });
-
-                if (response.ok) {
-                    console.log('Comment saved successfully');
-                    cell2.textContent = commentText;
-                    cell3.textContent = commenterName;
-                    cell4.textContent = new Date(comment.tcCreatedOn).toLocaleDateString();
-
-                    // Remove save and cancel buttons
-                    cell5.innerHTML = `
-                        <a class="btn btn-info btn-sm" href="#"><i class="fas fa-pencil-alt"></i> Edit</a>
-                        <a class="btn btn-danger btn-sm" href="#"><i class="fas fa-trash"></i> Delete</a>
-                    `;
-                } else {
-                    throw new Error('Failed to save comment');
-                }
-            } catch (error) {
-                console.error('Error saving comment:', error);
-                alert('Failed to save comment. Please try again.');
-            }
-        });
-    });
-
-    fetchTaskDetails();
-    fetchComments();
-    // just comment
 });

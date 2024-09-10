@@ -27,25 +27,145 @@ document.addEventListener('DOMContentLoaded', () => {
       newRow.innerHTML = `
         <td>${(currentPage - 1) * limit + index + 1}</td>
         <td><a href="/HTML/comment.html?taskId=${task._id}">${task.tTitle}</a></td>
-        <td>${task.tDesc}</td>
-        <td>${task.tStatus.charAt(0).toUpperCase() + task.tStatus.slice(1)}</td>
-        <td>${task.tAssignedTo.join(', ')}</td>
+        <td id="taskDesc-${task._id}">${task.tDesc}</td>
+        <td id="taskStatus-${task._id}">${task.tStatus.charAt(0).toUpperCase() + task.tStatus.slice(1)}</td>
+        <td id="taskAssignedTo-${task._id}">${task.tAssignedTo.join(', ')}</td>
         <td>${new Date(task.tCreatedOn).toLocaleDateString()}</td>
         <td class="project-actions text-right">
-          <a class="btn btn-info btn-sm" href="#"><i class="fas fa-pencil-alt"></i> Edit</a>
+          <button class="btn btn-info btn-sm edit-button" data-id="${task._id}"><i class="fas fa-pencil-alt"></i> Edit</button>
           <button class="btn btn-danger btn-sm delete-button" data-id="${task._id}"><i class="fas fa-trash-alt"></i> Delete</button>
         </td>
       `;
     });
 
     // Add event listeners for delete buttons
-    const deleteButtons = document.querySelectorAll('.delete-button');
-    deleteButtons.forEach(button => {
+    document.querySelectorAll('.delete-button').forEach(button => {
       button.addEventListener('click', async (e) => {
         const taskId = e.target.closest('button').dataset.id;
         await deleteTask(taskId);
         fetchTasks(currentPage); // Refresh task list after deletion
       });
+    });
+
+    // Add event listeners for edit buttons
+    document.querySelectorAll('.edit-button').forEach(button => {
+      button.addEventListener('click', (e) => {
+        const taskId = e.target.dataset.id;
+        enableEditing(taskId);
+      });
+    });
+  };
+
+  const enableEditing = (taskId) => {
+    const descCell = document.getElementById(`taskDesc-${taskId}`);
+    const statusCell = document.getElementById(`taskStatus-${taskId}`);
+    const assignedToCell = document.getElementById(`taskAssignedTo-${taskId}`);
+
+    // Store current values to revert if canceled
+    const originalDesc = descCell.textContent;
+    const originalStatus = statusCell.textContent;
+    const originalAssignedTo = assignedToCell.textContent;
+
+    // Convert description to editable input
+    descCell.innerHTML = `<input type="text" class="form-control" value="${originalDesc}" id="editDesc-${taskId}">`;
+
+    // Convert status to a dropdown
+    statusCell.innerHTML = `
+      <select class="form-control" id="editStatus-${taskId}">
+        <option value="pending">Pending</option>
+        <option value="working">Working</option>
+        <option value="onhold">Onhold</option>
+        <option value="completed">Completed</option>
+      </select>
+    `;
+    document.getElementById(`editStatus-${taskId}`).value = originalStatus.toLowerCase();
+
+    // Convert assignedTo to a multiselect dropdown
+    assignedToCell.innerHTML = `
+      <select multiple class="form-control" id="editAssignedTo-${taskId}">
+      </select>
+    `;
+
+    // Populate users in assignedTo select box
+    populateAssignedToSelect().then(users => {
+      const assignedToSelect = document.getElementById(`editAssignedTo-${taskId}`);
+      users.forEach(user => {
+        const option = document.createElement('option');
+        option.value = user._id;
+        option.textContent = user.fullName;
+        assignedToSelect.appendChild(option);
+      });
+
+      // Preselect the already assigned users
+      originalAssignedTo.split(', ').forEach(assignedUser => {
+        [...assignedToSelect.options].forEach(option => {
+          if (option.textContent === assignedUser) {
+            option.selected = true;
+          }
+        });
+      });
+    });
+
+    // Replace the Edit button with Save and Cancel buttons
+    const actionCell = descCell.parentElement.querySelector('.project-actions');
+    actionCell.innerHTML = `
+      <button class="btn btn-success btn-sm save-button" data-id="${taskId}">Save</button>
+      <button class="btn btn-secondary btn-sm cancel-button" data-id="${taskId}">Cancel</button>
+    `;
+
+    // Save event listener
+    actionCell.querySelector('.save-button').addEventListener('click', async () => {
+      const updatedDesc = document.getElementById(`editDesc-${taskId}`).value;
+      const updatedStatus = document.getElementById(`editStatus-${taskId}`).value;
+      const updatedAssignedTo = [...document.getElementById(`editAssignedTo-${taskId}`).selectedOptions].map(option => option.value);
+
+      const updateData = {
+        tDesc: updatedDesc,
+        tStatus: updatedStatus,
+        tAssignedTo: updatedAssignedTo
+      };
+
+      try {
+        const response = await fetch(`http://172.16.2.6:4000/edit/task/${taskId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(updateData)
+        });
+
+        if (response.ok) {
+          // Fetch updated task data and update the row
+          const updatedTask = await response.json();
+          descCell.textContent = updatedTask.tDesc;
+          statusCell.textContent = updatedTask.tStatus.charAt(0).toUpperCase() + updatedTask.tStatus.slice(1);
+          assignedToCell.textContent = updatedTask.tAssignedTo.join(', ');
+
+          // Revert action buttons back to Edit and Delete
+          actionCell.innerHTML = `
+            <button class="btn btn-info btn-sm edit-button" data-id="${taskId}"><i class="fas fa-pencil-alt"></i> Edit</button>
+            <button class="btn btn-danger btn-sm delete-button" data-id="${taskId}"><i class="fas fa-trash-alt"></i> Delete</button>
+          `;
+        } else {
+          throw new Error('Failed to update task');
+        }
+      } catch (error) {
+        console.error('Error updating task:', error);
+        alert('Failed to update task.');
+      }
+    });
+
+    // Cancel event listener
+    actionCell.querySelector('.cancel-button').addEventListener('click', () => {
+      descCell.textContent = originalDesc;
+      statusCell.textContent = originalStatus;
+      assignedToCell.textContent = originalAssignedTo;
+
+      // Revert action buttons back to Edit and Delete
+      actionCell.innerHTML = `
+        <button class="btn btn-info btn-sm edit-button" data-id="${taskId}"><i class="fas fa-pencil-alt"></i> Edit</button>
+        <button class="btn btn-danger btn-sm delete-button" data-id="${taskId}"><i class="fas fa-trash-alt"></i> Delete</button>
+      `;
     });
   };
 
@@ -83,16 +203,16 @@ document.addEventListener('DOMContentLoaded', () => {
       paginationControls.appendChild(prevLi);
     }
 
-    for (let page = 1; page <= totalPages; page++) {
+    for (let i = 1; i <= totalPages; i++) {
       const li = document.createElement('li');
-      li.className = `page-item ${page === currentPage ? 'active' : ''}`;
+      li.className = `page-item ${i === currentPage ? 'active' : ''}`;
       const a = document.createElement('a');
       a.className = 'page-link';
       a.href = '#';
-      a.textContent = page;
+      a.textContent = i;
       a.addEventListener('click', (e) => {
         e.preventDefault();
-        fetchTasks(page);
+        fetchTasks(i);
       });
       li.appendChild(a);
       paginationControls.appendChild(li);
@@ -114,180 +234,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // Helper function to populate assigned to select box
   const populateAssignedToSelect = async () => {
     try {
       const response = await fetch('http://172.16.2.6:4000/api/users');
       if (!response.ok) {
         throw new Error('Failed to fetch users');
       }
-      const users = await response.json();
-      return users;
+      return await response.json();
     } catch (error) {
       console.error('Error fetching users:', error);
-      alert('Failed to fetch users. Please try again later.');
       return [];
     }
-  };  
+  };
 
-  const addTaskButton = document.getElementById('addTaskButton');
-  addTaskButton.addEventListener('click', async () => {
-    const taskTableBody = document.getElementById('taskTableBody');
-    const newRow = taskTableBody.insertRow();
-
-    const serialNumber = taskTableBody.rows.length + 0; 
-    const cell1 = newRow.insertCell(0);
-    cell1.textContent = serialNumber;
-
-    const cell2 = newRow.insertCell(1);
-    const taskInput = document.createElement('input');
-    taskInput.type = 'text';
-    taskInput.className = 'form-control';
-    cell2.appendChild(taskInput);
-
-    const cell3 = newRow.insertCell(2);
-    const descriptionInput = document.createElement('input');
-    descriptionInput.type = 'text';
-    descriptionInput.className = 'form-control';
-    cell3.appendChild(descriptionInput);
-
-    const cell4 = newRow.insertCell(3);
-    const statusSelect = document.createElement('select');
-    statusSelect.className = 'form-control';
-    ['pending', 'working', 'onhold', 'completed'].forEach(status => {
-      const option = document.createElement('option');
-      option.value = status;
-      option.textContent = status.charAt(0).toUpperCase() + status.slice(1);
-      statusSelect.appendChild(option);
-    });
-    cell4.appendChild(statusSelect);
-
-    const cell5 = newRow.insertCell(4);
-    const assignedToSelect = document.createElement('select');
-    assignedToSelect.className = 'form-control';
-    assignedToSelect.multiple = true;
-
-    const users = await populateAssignedToSelect();
-    users.forEach(user => {
-      const option = document.createElement('option');
-      option.value = user._id; // Assuming _id is used as value
-      option.textContent = user.fullName;
-      assignedToSelect.appendChild(option);
-    });
-
-    cell5.appendChild(assignedToSelect);
-
-    const cell6 = newRow.insertCell(5);
-    cell6.textContent = new Date().toLocaleDateString();
-
-    const cell7 = newRow.insertCell(6);
-    const saveButton = document.createElement('button');
-    saveButton.className = 'btn btn-success btn-sm mr-2';
-    saveButton.textContent = 'Save';
-    const cancelButton = document.createElement('button');
-    cancelButton.className = 'btn btn-secondary btn-sm';
-    cancelButton.textContent = 'Cancel';
-    cell7.appendChild(saveButton);
-    cell7.appendChild(cancelButton);
-
-    cancelButton.addEventListener('click', function() {
-      newRow.remove();
-    });
-
-    saveButton.addEventListener('click', async function() {
-      if (taskInput.value.trim() && descriptionInput.value.trim() && statusSelect.value) {
-        const newTask = {
-          tTitle: taskInput.value,
-          tDesc: descriptionInput.value,
-          tStatus: statusSelect.value,
-          tAssignedTo: Array.from(assignedToSelect.selectedOptions, option => option.value)
-        };
-
-        try {
-          const response = await fetch('http://172.16.2.6:4000/add/task', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(newTask)
-          });
-
-          if (response.ok) {
-            const savedTask = await response.json();
-            cell2.textContent = savedTask.tTitle;
-            cell3.textContent = savedTask.tDesc;
-            cell4.textContent = savedTask.tStatus.charAt(0).toUpperCase() + savedTask.tStatus.slice(1);
-            cell5.textContent = savedTask.tAssignedTo.join(', ');
-            cell6.textContent = new Date(savedTask.tCreatedOn).toLocaleDateString();
-            cell7.innerHTML = `
-              <a class="btn btn-info btn-sm" href="#"><i class="fas fa-pencil-alt"></i> Edit</a>
-              <button class="btn btn-danger btn-sm delete-button" data-id="${savedTask._id}"><i class="fas fa-trash-alt"></i> Delete</button>
-            `;
-
-            // Add delete event listener for the newly added task
-            cell7.querySelector('.delete-button').addEventListener('click', async (e) => {
-              const taskId = savedTask._id;
-              await deleteTask(taskId);
-              fetchTasks(currentPage); // Refresh task list after deletion
-            });
-          } else {
-            console.error('Failed to save task:', response.statusText);
-            alert('Failed to save task.');
-          }
-        } catch (error) {
-          console.error('Error saving task:', error);
-          alert('Error saving task.');
-        }
-      } else {
-        alert('Please fill in all fields before saving.');
-      }
-    });
-  });
-
-  const editButtons = document.querySelectorAll('.btn-info.fas.fa-pencil-alt');
-
-editButtons.forEach(button => {
-  button.addEventListener('click', async (event) => {
-    const taskId = event.target.closest('button').dataset.taskId;
-
-    // Get updated data from input fields or dropdowns (replace with your logic)
-    const updatedDesc = document.getElementById(`taskDesc-${taskId}`).value;
-    const updatedStatus = document.getElementById(`taskStatus-${taskId}`).value;
-    const updatedAssignedTo = [...document.getElementById(`taskAssignedTo-${taskId}`).selectedOptions].map(option => option.value);
-
-    // Prepare update data object
-    const updateData = {
-      tDesc: updatedDesc,
-      tStatus: updatedStatus,
-      tAssignedTo: updatedAssignedTo
-    };
-
-    try {
-      const response = await fetch(`http://172.16.2.6:4000/task/${taskId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(updateData)
-      });
-
-      if (response.ok) {
-        // Update task details on the page (replace with your logic)
-        const updatedTask = await response.json();
-        document.getElementById(`taskTitle-${taskId}`).textContent = updatedTask.tTitle;
-        document.getElementById(`taskDesc-${taskId}`).textContent = updatedTask.tDesc;
-        // ... (update other displayed fields)
-        alert('Task updated successfully!');
-      } else {
-        console.error('Error updating task:', response.statusText);
-        alert('Failed to update task. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error during PUT request:', error);
-      alert('An error occurred. Please try again.');
-    }
-  });
+  // Initial fetch
+  fetchTasks();
 });
 
 
-  fetchTasks(currentPage);
-});
