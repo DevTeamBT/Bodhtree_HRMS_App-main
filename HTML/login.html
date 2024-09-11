@@ -18,7 +18,7 @@
                 <p class="login-box-msg">Sign in to start your session</p>
                <!--Alert Container ---->
                 <div id="alert-container"></div>
-                <form action="/api/login" method="post" onsubmit="loginUser(event)">
+                <form action="/api/login" method="post" onsubmit="loginUser(event)" id="login-form">
                     <div class="mb-3">
                         <input type="email" class="form-control" placeholder="Email" id="email" required>
                         <div id="error-message" style="color: red; display: none;">Please enter a valid Bodhtree email address.</div>
@@ -32,6 +32,7 @@
                         </div>
                     </div>
                 </form>
+                <div id="result"></div>
                 <p class="mb-1">
                     <a href="./forgot.html">I forgot my password</a>
                 </p>
