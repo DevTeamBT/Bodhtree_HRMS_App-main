@@ -1,4 +1,4 @@
-.login-page{
+.login-page {
     -ms-flex-align: center;
     align-items: center;
     background-color: #e9ecef;
@@ -10,35 +10,48 @@
     -ms-flex-pack: center;
     justify-content: center
 }
-.login-box{
+ 
+/* Red border for invalid input fields */
+input.is-invalid {
+    border-color: red;
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+    /* Optional for enhanced visibility */
+}
+ 
+.login-box {
     width: 360px
 }
-.login-logo{
+ 
+.login-logo {
     font-size: 2.1rem;
     font-weight: 300;
     margin-bottom: .9rem;
     text-align: center
 }
-
-.login-logo a{
+ 
+.login-logo a {
     color: #495057
 }
-.card .login-card-body{
+ 
+.card .login-card-body {
     background-color: #fff;
     border-top: 0;
     color: #666;
     padding: 20px
 }
- .mb-1 a {
+ 
+.mb-1 a {
     color: #007bff;
     text-decoration: none;
     background-color: transparent;
- }  
-.login-box-msg{
+}
+ 
+.login-box-msg {
     margin: 0;
     padding: 0 20px 20px;
     text-align: center
 }
+ 
 body {
     margin: 0;
     font-family: "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -49,9 +62,11 @@ body {
     text-align: left;
     background-color: #fff;
 }
-.card .btn-block{
+ 
+.card .btn-block {
     width: 100%;
 }
+ 
 form .form-control {
     display: block;
     width: 100%;
@@ -68,22 +83,35 @@ form .form-control {
     box-shadow: inset 0 0 0 transparent;
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out
 }
+ 
 button[type="submit"] {
-    background-color: #0d62bd; /* Blue background */
-    color: #fff; /* White text */
-    border: none; /* Remove border */
-    padding: 10px 20px; /* Add some padding */
-    text-align: center; /* Center the text */
-    text-decoration: none; /* Remove underline from text */
-    font-size: 16px; /* Adjust the font size */
-    border-radius: 4px; /* Add rounded corners */
-    cursor: pointer; /* Change cursor to pointer on hover */
-    width: 100%; /* Make the button fill the width of its container */
+    background-color: #0d62bd;
+    /* Blue background */
+    color: #fff;
+    /* White text */
+    border: none;
+    /* Remove border */
+    padding: 10px 20px;
+    /* Add some padding */
+    text-align: center;
+    /* Center the text */
+    text-decoration: none;
+    /* Remove underline from text */
+    font-size: 16px;
+    /* Adjust the font size */
+    border-radius: 4px;
+    /* Add rounded corners */
+    cursor: pointer;
+    /* Change cursor to pointer on hover */
+    width: 100%;
+    /* Make the button fill the width of its container */
 }
-
+ 
 button[type="submit"]:hover {
-    background-color: #0e549e; /* Darker blue on hover */
+    background-color: #0e549e;
+    /* Darker blue on hover */
 }
+ 
 button[type="submit"] a {
     color: #fff;
     text-decoration: none;
