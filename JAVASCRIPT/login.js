@@ -33,11 +33,11 @@ async function loginUser(event) {
 
             const userRole = result.user.roleName;
             if (userRole === 'admin') {
-                window.location.replace('/HTML/Hr pages/hr.html');
+                window.location.replace('/HTML/HrPages');
             } else if (userRole === 'employee') {
-                window.location.replace('/HTML/employee pages/home.html');
+                window.location.replace('/HTML/employeePages/home.html');
             } else if (userRole === 'manager') {
-                window.location.replace('/HTML/manager pages/manager.html');
+                window.location.replace('/HTML/managerPages/manager.html');
             } else {
                 resultElement.innerText = 'Invalid role';
             }
