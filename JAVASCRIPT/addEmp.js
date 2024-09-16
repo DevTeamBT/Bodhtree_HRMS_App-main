@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (nextButton1) {
             nextButton1.addEventListener('click', () => {
                 const step1Data = {
-                    enterseries: document.getElementById('empSeries')?.value || '',
+                    enterseries: document.getElementById('empSeries')?.value !== 'Select' ? document.getElementById('empSeries').value : '',
                     probationPeriod: document.getElementById('probation')?.value || '',
                     enterCode: document.getElementById('employeeNumber')?.value || '',
                     confirmationDate: document.getElementById('conformationdate')?.value || '',
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     personal_Email: document.getElementById('persionalemail')?.value || '',
                     dateOfBirth: document.getElementById('dob')?.value || '',
                     mobileNo: document.getElementById('pnumber')?.value || '',
-                    gender: document.getElementById('gender')?.value || '',
+                    gender:  document.querySelector('input[name="gender"]:checked')?.value || '',
                     roleName: document.getElementById('role')?.value || '',
                     status: document.getElementById('status')?.value || '',
                     dateOfJoining: document.getElementById('doj')?.value || ''
@@ -116,20 +116,21 @@ document.addEventListener('DOMContentLoaded', function () {
             ...step4Data
         };
 
-        console.log('Final Data:', finalData);
+        // console.log('Final Data:', finalData);
 
         try {
-            const response = await fetch('http://localhost:4000/api/users', {
+            const response = await fetch('http://172.16.2.6:4000/api/users', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(finalData)
             });
 
-            console.log('Response:', response);
+            // console.log('Response:', response);
 
             if (response.ok) {
                 const result = await response.json();
-                console.log('Success:', result);
+                // console.log('Success:', result);
+                alert('Employee added successfully!');
             } else {
                 console.error('Request failed:', response.status, response.statusText);
             }

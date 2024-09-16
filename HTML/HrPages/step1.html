@@ -163,7 +163,7 @@
                   <input type="date" class="form-control" id="dob" placeholder="Enter Date Of Birth">
                 </div>
                 <div class="col-sm-6">
-                  <label for="Number" class="col-form-label" id="pnumber">Mobile Number</label>
+                  <label for="Number" class="col-form-label">Mobile Number</label>
                   <input type="number" class="form-control" id="pnumber" placeholder="Enter Candidate Mobile Number">
                 </div>
               </div>
@@ -171,18 +171,18 @@
                 <div class="col-sm-6">
                   <label for="dob" class="col-form-label">Gender</label>
                   <div>
-                    <input type="radio" value="male" name="fav_language value=" Male" id="male">
+                    <input type="radio" value="male" name="gender" id="male">
                     <label for="Male">Male</label>
-                    <input type="radio" value="female" name="fav_language value=" Female" id="female">
+                    <input type="radio" value="female" name="gender" id="female">
                     <label for="Female">Female</label>
-                    <input type="radio" value="others" name="fav_language value=" Others" id="others">
+                    <input type="radio" value="others" name="gender" id="others">
                     <label for="Others">Others</label>
                   </div>
                 </div>
                 <div class="col-sm-6">
-                  <label for="dob" class="col-form-label" id="role">Role</label>
+                  <label for="dob" class="col-form-label" >Role</label>
                         <div class="d-flex align-items-center">
-                            <select class="form-control mr-2">
+                            <select class="form-control mr-2" id="role">
                                 <option value="---Select---">---Select---</option>
                                 <option value="sAdmin">Senior Admin</option>
                                 <option value="admin">Admin</option>
@@ -194,8 +194,8 @@
               </div>
               <div class="row mb-2">
                 <div class="col-sm-6">
-                  <label for="dob" class="col-form-label" id="status">Status</label>
-                  <select class="form-control">
+                  <label for="dob" class="col-form-label" >Status</label>
+                  <select class="form-control" id="status">
                     <option value="---Select---">---Select---</option>
                     <option value="confirm">Confirm</option>
                     <option value="consultant">Consultant</option>
