@@ -146,7 +146,7 @@ document.getElementById('signin-btn').addEventListener('click', async () => {
     console.log('Attempting to sign in:', { userId, status, fullName });
 
     try {
-        const response = await fetch('http://localhost:4000/add/signIn', {
+        const response = await fetch('http://172.16.2.6:4000/add/signIn', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -192,7 +192,7 @@ document.getElementById('signout-btn').addEventListener('click', async () => {
     console.log('Attempting to sign out:', { userId });
 
     try {
-        const response = await fetch('http://localhost:4000/add/signOut', {
+        const response = await fetch('http://172.16.2.6:4000/add/signOut', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
