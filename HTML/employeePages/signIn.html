@@ -110,11 +110,11 @@
               <i class="far fa-comments"></i>
             </a>
           </li>
-          <!-- <li class="nav-item">
+          <li class="nav-item">
             <a class="nav-link" data-widget="fullscreen" href="#" role="button">
               <i class="fas fa-expand-arrows-alt"></i>
             </a>
-          </li> -->
+          </li>
           <div id="user-fullname"></div>
           <li class="nav-item">
             <a class="nav-link" data-widget="control-sidebar" data-controlsidebar-slide="true" href="#" role="button">
@@ -129,27 +129,83 @@
         <div id="greeting" class="alert alert-info" role="alert"></div>
         <div id="quote" class="alert alert-secondary" role="alert"></div>
         
-        <!-- Sign-In to Session Section -->
+      
         <div class="container mt-4">
-          <div class="card p-4">
-            <h2 class="text-center">Sign-In To Your Session</h2> 
+          <div class="row equal-height-container">
+            <!-- Sign-In Section -->
+            <div class="col-md-6 equal-height">
+              <div class="card p-4">
+                <h3 class="text-center">Sign-In To Your Session</h3> 
 
-            <!-- Current Time Display -->
-            <p id="current-time" class="text-center"></p>
+                <!-- Current Time Display -->
+                <p id="current-time" class="text-center"></p>
 
-            <!-- Sign In and Sign Out Buttons -->
-            <div class="d-flex justify-content-center mb-3">
-              <button id="signin-btn" class="btn btn-primary me-3" data-bs-toggle="modal" data-bs-target="#locationModal">Sign In</button>
-              <button id="signout-btn" class="btn btn-danger" style="display: none;" onclick="showSignoutConfirmation()">Sign Out</button>
+               
+    <!-- Work Location Dropdown -->
+    <div class="mb-3">
+      <label for="location" class="form-label">Work Location</label>
+      <select class="form-select" id="location" required>
+        <option value="">Select location</option>
+        <option value="wfh">Work From Home</option>
+        <option value="office">Office</option>
+        <option value="client-location">Client Location</option>
+      </select>
+    </div>
+
+    <!-- Sign In and Sign Out Buttons -->
+    <div class="d-flex justify-content-center mb-3">
+      <button id="signin-btn" class="btn btn-primary me-3" onclick="submitSignin()">Sign In</button>
+      <button id="signout-btn" class="btn btn-danger" style="display: none;" onclick="showSignoutConfirmation()">Sign Out</button>
+    </div>
+
+    <!-- Messages and sign-in time -->
+    <p id="signin-time" class="text-center"></p>
+    <p id="message" class="text-center"></p>
+
+    <!-- Swipes History -->
+    <!-- <h3 class="text-center">Swipe History:</h3> -->
+    <ul id="swipes-list" class="list-unstyled text-center"></ul> <!-- This will display sign-in and sign-out times -->
+  </div>
+</div>
+
+            <!-- Leave Apply Section -->
+             
+            <div class="col-md-6 equal-height">
+              <div id="leaveStatus" style="color: #770899;"></div>
+              <div class="card p-4">
+                <h3 class="text-center">Leave Application</h3>
+                
+                <!-- Leave Form -->
+                <form id="leaveForm">
+                  <div class="mb-3">
+                    <label for="leave-type" class="form-label">Leave Type</label>
+                    <select class="form-select" id="leaveType" required>
+                      <option value="">Select leave type</option>
+                      <option value="casualLeave">Casual Leave</option>
+                      <option value="annualLeave">Annual Leave</option>
+                      <option value="sickLeave">Sick Leave</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label for="start-date" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="startDate" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="end-date" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="endDate" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="reason" class="form-label">Reason</label>
+                    <textarea class="form-control" id="reason" rows="3" required></textarea>
+                  </div>
+                  <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Submit Leave Request</button>
+                  </div>
+                </form>
+              </div>
             </div>
-
-            <!-- Messages and sign-in time -->
-            <p id="signin-time" class="text-center"></p>
-            <p id="message" class="text-center"></p>
-
-            <!-- Swipes History -->
-            <h3 class="text-center">Swipe History:</h3>
-            <ul id="swipes-list" class="list-unstyled text-center"></ul> <!-- This will display sign-in and sign-out times -->
+            <div id="leaveStatus" class="text-success"></div>
           </div>
         </div>
       </div>
@@ -207,6 +263,8 @@
 
 <!-- JavaScript -->
 <script src="/JAVASCRIPT/signIn.js"></script>
+<script src="/JAVASCRIPT/sidebar.js"></script>
+<script src="/JAVASCRIPT/fullscreen.js"></script>
 
 <!-- Bootstrap JS (including Popper.js for modals) -->
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>

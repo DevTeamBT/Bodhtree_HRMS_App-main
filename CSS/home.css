@@ -295,7 +295,7 @@ body {
   }
   
 
-  /* General body and form styles */
+ /* General body and form styles */
 body {
   margin: 0;
   font-family: "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -324,7 +324,6 @@ a {
 
 .main-sidebar.closed {
   width: 55px;
-  height: 100vh;
 }
 
 .sidebar {
@@ -571,4 +570,46 @@ ul li {
   font-size: 70px;
   color: rgba(0, 0, 0, 0.15);
   z-index: 0;
+}
+
+/* Equal height container for Sign-In and Leave Apply sections */
+.equal-height-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.equal-height {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 0 10px;
+}
+
+.card {
+  flex: 1;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.card p {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.card .btn {
+  margin-top: auto;
+  width: 100%;
+}
+
+/* Modal styling */
+.modal-dialog {
+  max-width: 400px;
 }

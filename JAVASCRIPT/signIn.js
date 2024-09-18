@@ -17,6 +17,7 @@ async function displayGreeting() {
         if (!response.ok) {
             throw new Error('Failed to fetch user details');
         }
+        const fullName = sessionStorage.getItem('fullName');
         const data = await response.json();
         const userRole = data.user?.roleName || 'Guest';
         const roleGreetings = {
@@ -27,7 +28,7 @@ async function displayGreeting() {
             guest: 'Hello Guest'
         };
         const roleGreeting = roleGreetings[userRole] || 'Hello';
-        document.getElementById('greeting').textContent = `${timeGreeting}, ${roleGreeting}, Welcome to Bodhtree!`;
+        document.getElementById('greeting').textContent = `${timeGreeting}, ${fullName} Welcome to Bodhtree!`;
     } catch (error) {
         console.error('Error fetching user details:', error);
         document.getElementById('greeting').textContent = `${timeGreeting}, Welcome to Bodhtree!`;
@@ -58,15 +59,13 @@ function submitSignin() {
         const signoutBtn = document.getElementById('signout-btn');
         const swipesList = document.getElementById('swipes-list');
 
-        signinTimeElement.textContent = `Signed in at: ${now.toLocaleTimeString()} (Location: ${location.replace('-', ' ')})`;
-        messageElement.textContent = '';
-        const li = document.createElement('li');
-        li.textContent = `Signed in at: ${now.toLocaleTimeString()} (Location: ${location.replace('-', ' ')})`;
-        swipesList.appendChild(li);
+        // signinTimeElement.textContent = `Signed in at: ${now.toLocaleTimeString()} (Location: ${location.replace('-', ' ')})`;
+        // messageElement.textContent = '';
+        // const li = document.createElement('li');
+        // li.textContent = `Signed in at: ${now.toLocaleTimeString()} (Location: ${location.replace('-', ' ')})`;
+        // swipesList.appendChild(li);
         
-        const modal = bootstrap.Modal.getInstance(document.getElementById('locationModal'));
-        modal.hide();
-
+       
         signoutBtn.style.display = 'inline';
     } else {
         alert("Please choose a location.");
@@ -84,9 +83,9 @@ function confirmSignout() {
     const now = new Date();
     const swipesList = document.getElementById('swipes-list');
 
-    const li = document.createElement('li');
-    li.textContent = `Signed out at: ${now.toLocaleTimeString()}`;
-    swipesList.appendChild(li);
+    // const li = document.createElement('li');
+    // li.textContent = `Signed out at: ${now.toLocaleTimeString()}`;
+    // swipesList.appendChild(li);
 
     // Hide the sign-out button
     const signoutBtn = document.getElementById('signout-btn');
@@ -98,7 +97,7 @@ function confirmSignout() {
 
     // Optionally, you might want to clear the sign-in time or other session data here
     document.getElementById('signin-time').textContent = '';
-    document.getElementById('message').textContent = '';
+    // document.getElementById('message').textContent = '';
 }
 
 // Initialize the page
@@ -114,6 +113,8 @@ document.getElementById('signin-btn').addEventListener('click', async () => {
     const location = document.getElementById('location').value;
     const userId = sessionStorage.getItem('userId'); 
     const fullName = sessionStorage.getItem('fullName');
+   
+    
 
     // If no location is selected, alert and focus the select dropdown
     if (!location) {
@@ -162,8 +163,12 @@ document.getElementById('signin-btn').addEventListener('click', async () => {
         console.log('Response Data:', data);
 
         if (response.ok) {
-            document.getElementById('message').textContent = `Signed in successfully by ${fullName}`;
+            const serverTime = new Date();
+            const istTime = serverTime.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+            document.getElementById('message').classList.add('text-success');
+            document.getElementById('message').textContent = `Signed in successfully by ${fullName} at ${istTime}`;
             console.log('Sign-in successful:', data);
+            // Assuming the server response includes a serverTime field
             // Update UI or handle response
         } else {
             // Log the server response and error message
@@ -181,7 +186,8 @@ document.getElementById('signin-btn').addEventListener('click', async () => {
 
 //signOut
 document.getElementById('signout-btn').addEventListener('click', async () => {
-    const userId = sessionStorage.getItem('userId'); // Retrieve userId from sessionStorage
+    const userId = sessionStorage.getItem('userId'); 
+    const fullName = sessionStorage.getItem('fullName');
 
     if (!userId) {
         console.error('User ID is not available');
@@ -205,7 +211,10 @@ document.getElementById('signout-btn').addEventListener('click', async () => {
         const data = await response.json();
         
         if (response.ok) {
-            document.getElementById('message').textContent = 'Signed out successfully';
+            const serverTime = new Date();
+            const istTime = serverTime.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+            // document.getElementById('message').classList.add('text-success');
+            document.getElementById('message').textContent = `${fullName} Signed out successfully at ${istTime}`;
             console.log('Sign-out successful:', data);
             // Update UI or handle response
         } else {
@@ -217,3 +226,76 @@ document.getElementById('signout-btn').addEventListener('click', async () => {
         document.getElementById('message').textContent = 'An error occurred. Please try again.';
     }
 });
+
+
+//leave apply fetch function
+async function submitLeaveRequest(event) {
+    event.preventDefault();
+  
+    const leaveType = document.getElementById('leaveType').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;   
+  
+    const reason = document.getElementById('reason').value;   
+  
+  
+    const userId = sessionStorage.getItem('userId');
+  
+    // Validate required fields and date formats
+    if (!leaveType || !startDate || !endDate || !reason || !userId) {
+      alert("Please fill out all required fields.");
+      return;
+    }
+  
+    if (new Date(startDate) > new Date(endDate)) {
+      alert("Start date must be before end date.");
+      return;
+    }
+  
+    const leaveData = {
+      userId,
+      leaveType,
+      startDate,
+      endDate,
+      reason,
+      appliedDate: new Date().toISOString(),
+      status: 'pending'
+    };
+  
+    try {
+      const response = await fetch('http://172.16.2.6:4000/apply/leave', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(leaveData)
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Server responded with status ${response.status}`);
+      }
+  
+      const responseData = await response.json();
+  
+      if (responseData.success) {
+        alert('Leave request submitted successfully!');
+
+        // Update the leave status on the HTML page
+      const leaveStatusElement = document.getElementById('leaveStatus');
+      leaveStatusElement.textContent = `Leave request submitted successfully. Status: ${responseData.status}`;
+      } 
+      else {
+        alert(`Submit leave request: ${responseData.message}`);
+        console.error('Error submitting leave request:', responseData.message);
+      }
+    } catch (error) {
+      console.error('Error submitting leave request:', error);
+      alert('An error occurred. Please try again.');
+    }
+  }
+  
+  // Get the form element
+  const leaveForm = document.getElementById('leaveForm');
+  
+  // Attach a submit event listener to the form
+  leaveForm.addEventListener('submit', submitLeaveRequest);
