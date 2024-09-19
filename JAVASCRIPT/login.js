@@ -49,7 +49,7 @@ async function loginUser(event) {
             const userRole = result.user.roleName;
             switch (userRole) {
                 case 'admin':
-                    window.location.replace('/HTML/HrPages/hr.html');
+                    window.location.replace('/HTML/HrPages/HrHome.html');
                     break;
                 case 'employee':
                     window.location.replace('/HTML/employeePages/signIn.html');
