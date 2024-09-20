@@ -108,13 +108,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // fetching signIn and signOut api
-//signIn
+// Sign In
 document.getElementById('signin-btn').addEventListener('click', async () => {
     const location = document.getElementById('location').value;
     const userId = sessionStorage.getItem('userId'); 
     const fullName = sessionStorage.getItem('fullName');
-   
-    
 
     // If no location is selected, alert and focus the select dropdown
     if (!location) {
@@ -152,10 +150,7 @@ document.getElementById('signin-btn').addEventListener('click', async () => {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                userId,
-                status
-            })
+            body: JSON.stringify({ userId, status })
         });
 
         // Log the full response for debugging
@@ -168,8 +163,9 @@ document.getElementById('signin-btn').addEventListener('click', async () => {
             document.getElementById('message').classList.add('text-success');
             document.getElementById('message').textContent = `Signed in successfully by ${fullName} at ${istTime}`;
             console.log('Sign-in successful:', data);
-            // Assuming the server response includes a serverTime field
-            // Update UI or handle response
+            
+            // Call the submitSignin function to update UI
+            submitSignin(location, istTime);
         } else {
             // Log the server response and error message
             document.getElementById('message').textContent = `Error: ${data.error || 'Unknown error'}`;
@@ -182,9 +178,26 @@ document.getElementById('signin-btn').addEventListener('click', async () => {
     }
 });
 
+// Function to update UI after sign-in
+function submitSignin(location, signInTime) {
+    const signinTimeElement = document.getElementById('signin-time');
+    const messageElement = document.getElementById('message');
+    const signoutBtn = document.getElementById('signout-btn');
+    const swipesList = document.getElementById('swipes-list');
+
+    signinTimeElement.textContent = `Signed in at: ${signInTime} (Location: ${location.replace('-', ' ')})`;
+    messageElement.textContent = '';
+    const li = document.createElement('li');
+    li.textContent = `Signed in at: ${signInTime} (Location: ${location.replace('-', ' ')})`;
+    swipesList.appendChild(li);
+
+    signoutBtn.style.display = 'inline';
+}
+
 
 
 //signOut
+// Sign Out
 document.getElementById('signout-btn').addEventListener('click', async () => {
     const userId = sessionStorage.getItem('userId'); 
     const fullName = sessionStorage.getItem('fullName');
@@ -203,9 +216,7 @@ document.getElementById('signout-btn').addEventListener('click', async () => {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                userId
-            })
+            body: JSON.stringify({ userId })
         });
 
         const data = await response.json();
@@ -213,10 +224,13 @@ document.getElementById('signout-btn').addEventListener('click', async () => {
         if (response.ok) {
             const serverTime = new Date();
             const istTime = serverTime.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-            // document.getElementById('message').classList.add('text-success');
+
+            // Update the message for successful sign-out
             document.getElementById('message').textContent = `${fullName} Signed out successfully at ${istTime}`;
             console.log('Sign-out successful:', data);
-            // Update UI or handle response
+
+            // Call confirmSignout to handle UI updates and clear sign-in time
+            confirmSignout();
         } else {
             document.getElementById('message').textContent = `Error: ${data.error}`;
             console.log('Sign-out failed:', data.error);
@@ -226,6 +240,31 @@ document.getElementById('signout-btn').addEventListener('click', async () => {
         document.getElementById('message').textContent = 'An error occurred. Please try again.';
     }
 });
+
+// Confirm Sign-Out Functionality
+function confirmSignout() {
+    const now = new Date();
+    const swipesList = document.getElementById('swipes-list');
+
+    // Update swipes list with sign-out time
+    const li = document.createElement('li');
+    li.textContent = `Signed out at: ${now.toLocaleTimeString()}`;
+    swipesList.appendChild(li);
+
+    // Hide the sign-out button
+    const signoutBtn = document.getElementById('signout-btn');
+    signoutBtn.style.display = 'none';
+
+    // Hide the sign-out confirmation modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('signoutConfirmationModal'));
+    modal.hide();
+
+    // Clear the sign-in time or other session data if needed
+    document.getElementById('signin-time').textContent = '';
+    // Optionally, you can clear the message as well
+    // document.getElementById('message').textContent = '';
+}
+
 
 
 //leave apply fetch function

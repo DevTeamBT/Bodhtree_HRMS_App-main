@@ -167,7 +167,6 @@
     <ul id="swipes-list" class="list-unstyled text-center"></ul> <!-- This will display sign-in and sign-out times -->
   </div>
 </div>
-
             <!-- Leave Apply Section -->
              
             <div class="col-md-6 equal-height">
@@ -184,7 +183,8 @@
                       <option value="casualLeave">Casual Leave</option>
                       <option value="annualLeave">Annual Leave</option>
                       <option value="sickLeave">Sick Leave</option>
-                      <option value="other">Other</option>
+                      <option value="maternityLeave">Maternity Leave</option>
+                      <option value="paternityLeave">Paternity Leave</option>
                     </select>
                   </div>
                   <div class="mb-3">
@@ -200,7 +200,7 @@
                     <textarea class="form-control" id="reason" rows="3" required></textarea>
                   </div>
                   <div class="text-center">
-                    <button type="submit" class="btn btn-primary">Submit Leave Request</button>
+                    <button type="submit" class="btn btn-primary" onclick="submitLeave()">Submit Leave Request</button>
                   </div>
                 </form>
               </div>
