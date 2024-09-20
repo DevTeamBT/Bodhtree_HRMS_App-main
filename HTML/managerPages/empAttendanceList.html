@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Availability Schedule</title>
+    <link rel="stylesheet" href="/CSS/empAttendance.css">
+</head>
+<body>
+    <div class="schedule-container">
+        <!-- Calendar and Schedule Section -->
+        <div class="calendar-and-schedule">
+            <div class="schedule-box">
+                <p><strong>Schedule Start:</strong> <span id="schedule-start"></span></p>
+                <p><strong>Schedule End:</strong> <span id="schedule-end"></span></p>
+                <p><strong>Duration:</strong> <span id="duration">1 Week</span></p>
+            </div>
+            <div class="calendar-box">
+                <table class="calendar-table">
+                    <thead>
+                        <tr>
+                            <th colspan="7" id="calendar-month"></th>
+                        </tr>
+                        <tr>
+                            <th>Su</th>
+                            <th>Mo</th>
+                            <th>Tu</th>
+                            <th>We</th>
+                            <th>Th</th>
+                            <th>Fr</th>
+                            <th>Sa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="calendar-body">
+                        <!-- Calendar rows will be dynamically generated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="navigation-buttons">
+            <button id="prev-week-btn">Previous Week</button>
+            <button id="next-week-btn">Next Week</button>
+        </div>
+
+        <!-- Employee Availability Table -->
+        <table class="availability-table">
+            <thead>
+                <tr>
+                    <th>Employee Name</th>
+                    <th>Shift Duration</th>
+                    <th>Location</th>
+                    <th>Monday</th>
+                    <th>Tuesday</th>
+                    <th>Wednesday</th>
+                    <th>Thursday</th>
+                    <th>Friday</th>
+                    <!-- <th>Sign-In Timing</th>
+                    <th>Sign-Out Timing</th> -->
+                </tr>
+                
+            </thead>
+            <tbody id="availability-body">
+                <!-- Rows will be dynamically generated here -->
+                <!-- <tr>
+                    <th>Sign-In Timing</th>
+                    <th>Sign-Out Timing</th>
+                    <th>Status</th>
+                </tr> -->
+            </tbody>
+        </table>
+    </div>
+
+    <script src="/JAVASCRIPT/managerPages/empAttendance.js"></script>
+</body>
+</html>
